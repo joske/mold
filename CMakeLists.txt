@@ -109,6 +109,7 @@ endif()
 option(MOLD_MOSTLY_STATIC "Statically link libstdc++ and libcrypto" OFF)
 if(MOLD_MOSTLY_STATIC)
   target_link_options(mold PRIVATE -static-libstdc++)
+  target_link_libraries(mold PRIVATE libcrypto.a)
 endif()
 
 # Find zlib. If libz.so is not found, we compile a bundled one and
@@ -320,9 +321,10 @@ list(APPEND MOLD_ELF_TEMPLATE_FILES
   elf/tls.cc
   )
 
-list(APPEND MOLD_MACHO_TARGETS X86_64 ARM64)
+list(APPEND MOLD_MACHO_TARGETS X86_64 ARM64 ARM64_32)
 
 list(APPEND MOLD_MACHO_TEMPLATE_FILES
+  macho/arch-arm64.cc
   macho/cmdline.cc
   macho/dead-strip.cc
   macho/input-files.cc
@@ -332,6 +334,7 @@ list(APPEND MOLD_MACHO_TEMPLATE_FILES
   macho/mapfile.cc
   macho/output-chunks.cc
   macho/tapi.cc
+  macho/thunks.cc
   )
 
 function(mold_instantiate_templates SOURCE TARGET)
