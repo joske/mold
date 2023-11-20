@@ -1390,6 +1390,7 @@ template <typename E> void create_output_symtab(Context<E> &);
 template <typename E> void report_undef_errors(Context<E> &);
 template <typename E> void create_reloc_sections(Context<E> &);
 template <typename E> void copy_chunks(Context<E> &);
+template <typename E> void rewrite_endbr(Context<E> &);
 template <typename E> void apply_version_script(Context<E> &);
 template <typename E> void parse_symbol_version(Context<E> &);
 template <typename E> void compute_import_export(Context<E> &);
@@ -1650,6 +1651,7 @@ struct Context {
     bool ignore_data_address_equality = false;
     bool is_static = false;
     bool lto_pass2 = false;
+    bool nmagic = false;
     bool noinhibit_exec = false;
     bool oformat_binary = false;
     bool omagic = false;
@@ -1700,6 +1702,7 @@ struct Context {
     bool z_text = false;
     i64 filler = -1;
     i64 spare_dynamic_tags = 5;
+    i64 spare_program_headers = 0;
     i64 thread_count = 0;
     i64 z_stack_size = 0;
     u64 shuffle_sections_seed;
@@ -1751,6 +1754,7 @@ struct Context {
   bool is_static;
   bool in_lib = false;
   i64 file_priority = 10000;
+  MappedFile<Context<E>> *script_file = nullptr;
   std::unordered_set<std::string_view> visited;
   tbb::task_group tg;
 
@@ -2159,6 +2163,9 @@ public:
   // For LTO. True if the symbol is referenced by a regular object (as
   // opposed to IR object).
   bool referenced_by_regular_obj : 1 = false;
+
+  // For `-z rewrite-endbr`
+  bool address_taken : 1 = false;
 
   // Target-dependent extra members.
   [[no_unique_address]] SymbolExtras<E> extra;
